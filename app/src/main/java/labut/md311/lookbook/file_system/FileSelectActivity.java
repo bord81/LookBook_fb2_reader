@@ -33,6 +33,7 @@ public class FileSelectActivity extends ListActivity {
     private File[] file_list;
     private String[] file_str;
     private FileListAdapter fileListAdapter;
+    private boolean search_or_goodreads = true;
 
 
     @Override
@@ -67,7 +68,12 @@ public class FileSelectActivity extends ListActivity {
                 InfoDialog infoDialog = new InfoDialog();
                 infoDialog.show(getFragmentManager(), "about");
                 return true;
-            case R.id.scan:
+            case R.id.scan_search:
+                search_or_goodreads = true;
+                scanBook();
+                return true;
+            case R.id.scan_goodreads:
+                search_or_goodreads = false;
                 scanBook();
                 return true;
         }
@@ -82,16 +88,25 @@ public class FileSelectActivity extends ListActivity {
         IntentResult scan = IntentIntegrator.parseActivityResult(request, result, i);
         if (scan != null) {
             if (scan.getFormatName().equals("EAN_13")) {
-                new BookSearch().findBook(scan.getContents());
+                new BookSearch().findBook(scan.getContents(), search_or_goodreads);
             }
         }
     }
 
     //Eventbus method for handling book search events
     public void onEventMainThread(SearchEvent event) {
-        Uri uri = Uri.parse("https://www.google.com/search?q=" + event.bookName());
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        startActivity(intent);
+        if (event.bookName() != null && event.bookName().length() > 0) {
+            Uri uri;
+            if (event.searchOrGoodreads()) {
+                uri = Uri.parse("https://www.google.com/search?q=" + event.bookName());
+            } else {
+                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=&q=" + event.bookName());
+            }
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
+        } else {
+            Toast.makeText(getApplicationContext(), "Book not found!", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

@@ -4,6 +4,9 @@
         android:id="@+id/about"
         android:title="@string/about"></item>
     <item
-        android:id="@+id/scan"
-        android:title="@string/scan"></item>
+        android:id="@+id/scan_search"
+        android:title="@string/scan_for_search"></item>
+    <item
+        android:id="@+id/scan_goodreads"
+        android:title="@string/scan_for_goodreads"></item>
 </menu>

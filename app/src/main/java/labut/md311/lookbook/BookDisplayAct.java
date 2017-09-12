@@ -29,6 +29,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.arabidopsis.ahocorasick.AhoCorasick;
 import org.arabidopsis.ahocorasick.SearchResult;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import de.greenrobot.event.EventBus;
@@ -86,6 +88,7 @@ public class BookDisplayAct extends FragmentActivity {
     private String book_id;
     private String book_file;
     private String prev_book = "PREV_BOOK_SAVED";
+    private boolean search_or_goodreads = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,8 +175,16 @@ public class BookDisplayAct extends FragmentActivity {
                 InfoDialog infoDialog = new InfoDialog();
                 infoDialog.show(getFragmentManager(), "about");
                 return (true);
-            case R.id.scan:
+            case R.id.scan_search:
+                search_or_goodreads = true;
                 scanBook();
+                return (true);
+            case R.id.scan_goodreads:
+                search_or_goodreads = false;
+                scanBook();
+                return (true);
+            case R.id.open_goodreads:
+                openGoodreads();
                 return (true);
             case R.id.open_file:
                 startActivity(new Intent(getApplicationContext(), FileSelectActivity.class));
@@ -249,9 +260,19 @@ public class BookDisplayAct extends FragmentActivity {
 
     //Eventbus method for handling book search events
     public void onEventMainThread(SearchEvent event) {
-        Uri uri = Uri.parse("https://www.google.com/search?q=" + event.bookName());
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        startActivity(intent);
+        if (event.bookName() != null && event.bookName().length() > 0) {
+            Uri uri;
+            if (event.searchOrGoodreads()) {
+                uri = Uri.parse("https://www.google.com/search?q=" + event.bookName());
+            } else {
+                //goodreads dev key to be inserted
+                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=&q=" + event.bookName());
+            }
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
+        } else {
+            Toast.makeText(getApplicationContext(), "Book not found!", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void setupPager() {
@@ -622,8 +643,29 @@ public class BookDisplayAct extends FragmentActivity {
         IntentResult scan = IntentIntegrator.parseActivityResult(request, result, i);
         if (scan != null) {
             if (scan.getFormatName().equals("EAN_13")) {
-                new BookSearch().findBook(scan.getContents());
+                new BookSearch().findBook(scan.getContents(), search_or_goodreads);
             }
+        }
+    }
+
+    private void openGoodreads() {
+        String book_title = new String();
+        String book_name = new String();
+        BookBody bookBody = fileFragment.bookContents();
+        Map<String, String> headers = bookBody.bookHeaders();
+        if (headers != null && headers.size() > 0) {
+            Uri uri;
+            if (headers.containsKey("book-name")) {
+                book_name = headers.get("book-name");
+                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=FPXXuhgLfcxAUhNTHX0Kw&q=" + book_name);
+            } else if (headers.containsKey("book-title")) {
+                book_title = headers.get("book-title");
+                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=FPXXuhgLfcxAUhNTHX0Kw&q=" + book_title);
+            } else {
+                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=FPXXuhgLfcxAUhNTHX0Kw&q=");
+            }
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
         }
     }
 }

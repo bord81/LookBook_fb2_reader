@@ -22,6 +22,7 @@ import okhttp3.Response;
 //class for handling HTTP request for ISBN of the scanned book and returning its result to calling activity
 public class BookSearch {
     private String isbn;
+    private boolean search_or_goodreads = true;
     private final String baseUrl = "https://www.googleapis.com/customsearch/v1?";
     //google dev api key to be inserted
     private final String devKey = "key=";
@@ -30,8 +31,9 @@ public class BookSearch {
     private final String queryPref = "&q=";
 
 
-    public void findBook(String isbn) {
+    public void findBook(String isbn, boolean search_or_goodreads) {
         this.isbn = isbn;
+        this.search_or_goodreads = search_or_goodreads;
         new LoadBookName(baseUrl + devKey + searchEng + queryPref + isbn).start();
     }
 
@@ -86,10 +88,10 @@ public class BookSearch {
                             name[i] = jsonresponse[title_offset[0] + i];
                         }
                         String book_name = new String(name);
-                        EventBus.getDefault().post(new SearchEvent(book_name));
+                        EventBus.getDefault().post(new SearchEvent(book_name, search_or_goodreads));
+                    } else {
+                        EventBus.getDefault().post(new SearchEvent(new String(), search_or_goodreads));
                     }
-
-
                 }
             } catch (IOException e) {
                 Log.e("BookSearch error", e.getMessage());

@@ -46,7 +46,7 @@ public class FileFragment extends Fragment {
     private String FB2 = "FileFragment";
     private final Map<String, String> subTagsMapStart = new HashMap();
     private final Map<String, String> subTagsMapEnd = new HashMap();
-    private final String[] headerNames = {"isbn", "book-name"};
+    private final String[] headerNames = {"isbn", "book-name", "book-title"};
     private final String[] bookBodyTags = {"annotation", "epigraph", "body"};
     private final String[] notesAttrs = {"notes"};
     private final String[] notesTags = {"body"};
