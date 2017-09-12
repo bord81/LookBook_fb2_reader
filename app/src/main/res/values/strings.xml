@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">LookBook</string>
     <string name="about">About</string>
+    <string name="scan">Find book by bar code</string>
     <string name="open_file">Open file</string>
     <string name="about_message">Hello! This is a light book reader. Just take a look!</string>
 </resources>

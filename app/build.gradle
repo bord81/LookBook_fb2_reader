@@ -3,6 +3,18 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 16
     buildToolsVersion '25.0.3'
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+    }
     defaultConfig {
         applicationId "labut.md311.lookbook"
         minSdkVersion 16
@@ -26,6 +38,7 @@ dependencies {
     })
     compile 'com.android.support:support-v4:25.3.1'
     compile 'de.greenrobot:eventbus:2.4.1'
+    compile 'com.squareup.okhttp3:okhttp:3.9.0'
     testCompile 'junit:junit:4.12'
     compile files('libs/org.arabidopsis.ahocorasick-1.1.jar')
 }

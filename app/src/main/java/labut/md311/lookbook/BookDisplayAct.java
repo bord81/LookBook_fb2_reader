@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,12 +40,16 @@ import java.util.List;
 import java.util.Set;
 
 import de.greenrobot.event.EventBus;
+import labut.md311.lookbook.book_search.BookSearch;
+import labut.md311.lookbook.events.SearchEvent;
 import labut.md311.lookbook.file_formats.fb2.BookBinary;
 import labut.md311.lookbook.file_formats.fb2.BookBody;
 import labut.md311.lookbook.file_system.FileFragment;
 import labut.md311.lookbook.events.ParseEvent;
 import labut.md311.lookbook.file_system.FileSelectActivity;
 import labut.md311.lookbook.options_menu.InfoDialog;
+import labut.md311.lookbook.zxing.IntentIntegrator;
+import labut.md311.lookbook.zxing.IntentResult;
 
 //main activity class
 public class BookDisplayAct extends FragmentActivity {
@@ -167,12 +172,16 @@ public class BookDisplayAct extends FragmentActivity {
                 InfoDialog infoDialog = new InfoDialog();
                 infoDialog.show(getFragmentManager(), "about");
                 return (true);
+            case R.id.scan:
+                scanBook();
+                return (true);
             case R.id.open_file:
                 startActivity(new Intent(getApplicationContext(), FileSelectActivity.class));
                 return (true);
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     @Override
     protected void onResume() {
@@ -211,6 +220,7 @@ public class BookDisplayAct extends FragmentActivity {
         super.onPause();
     }
 
+    //Eventbus method for handling parse events
     public void onEventMainThread(ParseEvent event) {
         if (fileFragment != null) {
             BookBody bookBody = fileFragment.bookContents();
@@ -235,6 +245,13 @@ public class BookDisplayAct extends FragmentActivity {
             message.obj = spannableString;
             handler.sendMessage(message);
         }
+    }
+
+    //Eventbus method for handling book search events
+    public void onEventMainThread(SearchEvent event) {
+        Uri uri = Uri.parse("https://www.google.com/search?q=" + event.bookName());
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
     }
 
     private void setupPager() {
@@ -594,6 +611,19 @@ public class BookDisplayAct extends FragmentActivity {
         @Override
         public int getCount() {
             return lines_for_web.size();
+        }
+    }
+
+    private void scanBook() {
+        new IntentIntegrator(this).initiateScan();
+    }
+
+    public void onActivityResult(int request, int result, Intent i) {
+        IntentResult scan = IntentIntegrator.parseActivityResult(request, result, i);
+        if (scan != null) {
+            if (scan.getFormatName().equals("EAN_13")) {
+                new BookSearch().findBook(scan.getContents());
+            }
         }
     }
 }

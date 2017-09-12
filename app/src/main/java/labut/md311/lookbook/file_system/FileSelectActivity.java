@@ -3,9 +3,12 @@ package labut.md311.lookbook.file_system;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -16,8 +19,14 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import de.greenrobot.event.EventBus;
 import labut.md311.lookbook.BookDisplayAct;
 import labut.md311.lookbook.R;
+import labut.md311.lookbook.book_search.BookSearch;
+import labut.md311.lookbook.events.SearchEvent;
+import labut.md311.lookbook.options_menu.InfoDialog;
+import labut.md311.lookbook.zxing.IntentIntegrator;
+import labut.md311.lookbook.zxing.IntentResult;
 
 //activity class to show the file system tree
 public class FileSelectActivity extends ListActivity {
@@ -31,6 +40,58 @@ public class FileSelectActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         openInitialView();
         Toast.makeText(getApplicationContext(), "Select a FB2 file to open.", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        EventBus.getDefault().unregister(this);
+        super.onPause();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.f_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.about:
+                InfoDialog infoDialog = new InfoDialog();
+                infoDialog.show(getFragmentManager(), "about");
+                return true;
+            case R.id.scan:
+                scanBook();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void scanBook() {
+        new IntentIntegrator(this).initiateScan();
+    }
+
+    public void onActivityResult(int request, int result, Intent i) {
+        IntentResult scan = IntentIntegrator.parseActivityResult(request, result, i);
+        if (scan != null) {
+            if (scan.getFormatName().equals("EAN_13")) {
+                new BookSearch().findBook(scan.getContents());
+            }
+        }
+    }
+
+    //Eventbus method for handling book search events
+    public void onEventMainThread(SearchEvent event) {
+        Uri uri = Uri.parse("https://www.google.com/search?q=" + event.bookName());
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
     }
 
     @Override
