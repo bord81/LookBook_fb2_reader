@@ -657,12 +657,15 @@ public class BookDisplayAct extends FragmentActivity {
             Uri uri;
             if (headers.containsKey("book-name")) {
                 book_name = headers.get("book-name");
-                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=FPXXuhgLfcxAUhNTHX0Kw&q=" + book_name);
+                //goodreads dev key to be inserted
+                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=&q=" + book_name);
             } else if (headers.containsKey("book-title")) {
                 book_title = headers.get("book-title");
-                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=FPXXuhgLfcxAUhNTHX0Kw&q=" + book_title);
+                //goodreads dev key to be inserted
+                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=&q=" + book_title);
             } else {
-                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=FPXXuhgLfcxAUhNTHX0Kw&q=");
+                //goodreads dev key to be inserted
+                uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=&q=");
             }
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             startActivity(intent);

@@ -100,6 +100,7 @@ public class FileSelectActivity extends ListActivity {
             if (event.searchOrGoodreads()) {
                 uri = Uri.parse("https://www.google.com/search?q=" + event.bookName());
             } else {
+                //goodreads dev key to be inserted
                 uri = Uri.parse("https://www.goodreads.com/search/index.xml?key=&q=" + event.bookName());
             }
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
